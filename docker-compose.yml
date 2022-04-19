@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+    web:
+        container_name: api
+        build: .
+        restart: always
+        env_file:
+            - .env
+        volumes:
+            - .:/usr/src/app
+            - /usr/src/app/node_modules
+        depends_on:
+            - db
+        links:
+            - db
+        ports:
+            - ${SERVER_PORT}:${SERVER_PORT}
+        command: npm run dev
+
+    db:
+        image: mongo:latest
+        container_name: db
+        restart: always
+        env_file:
+            - .env
+        ports:
+            - '${DB_PORT}:${DB_PORT}'
+        volumes:
+            - dbdata-volume:/data/db
+        environment:
+            MONGO_INITDB_USERNAME: ${DB_USERNAME}
+            MONGO_INITDB_PASSWORD: ${DB_PASSWORD}
+            MONGO_INITDB_DATABASE: ${DB_DATABASE}
+    
+    cacheData:
+        container_name: cacheData
+        image: redis
+        command: redis-server
+        hostname: redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - /usr/src/app/data
+
+volumes:
+    dbdata-volume:
